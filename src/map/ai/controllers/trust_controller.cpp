@@ -47,13 +47,13 @@ CTrustController::~CTrustController()
     }
     POwner->PAI->PathFind.reset();
     POwner->allegiance = ALLEGIANCE_PLAYER;
-    POwner->PMaster = nullptr;
-
+    POwner->status = STATUS_DISAPPEAR;
     m_LastTopEnmity = nullptr;
 }
 
 void CTrustController::Despawn()
 {
+    POwner->PMaster = nullptr;
     POwner->animation = ANIMATION_DESPAWN;
     CMobController::Despawn();
 }
@@ -62,9 +62,14 @@ void CTrustController::Tick(time_point tick)
 {
     m_Tick = tick;
 
-    if (POwner->PMaster == nullptr)
+    if (!POwner->PMaster)
     {
         return;
+    }
+
+    if (POwner->PMaster->isCharmed)
+    {
+        this->Despawn();
     }
 
     if (POwner->PAI->IsEngaged())
@@ -213,7 +218,7 @@ void CTrustController::DoRoamTick(time_point tick)
 
 bool CTrustController::Ability(uint16 targid, uint16 abilityid)
 {
-    if (static_cast<CMobEntity*>(POwner)->PRecastContainer->HasRecast(RECAST_ABILITY, abilityid + 16, 0))
+    if (static_cast<CMobEntity*>(POwner)->PRecastContainer->HasRecast(RECAST_ABILITY, abilityid, 0))
     {
         return false;
     }
